@@ -14,8 +14,8 @@ using UnityEngine.UI;
 
 namespace Oxide.Plugins
 {
-    [Info("HelpCenterUI", "GameZoneOne", "1.5.2")]
-    [Description("Eigenes deutsches Help-UI mit Kategorien, Unterseiten und Chat-Ausgabe.")]
+    [Info("Help Center UI", "gamezoneone", "1.5.2")]
+    [Description("In-game help system with categories, sub-pages, editor UI and optional chat output.")]
     public class HelpCenterUI : RustPlugin
     {
         private const string UiNameMain = "HelpCenterUI.Main";
@@ -624,6 +624,29 @@ namespace Oxide.Plugins
 
         protected override void SaveConfig() => Config.WriteObject(_config, true);
 
+        private string T(string key, string userId = null, params object[] args)
+        {
+            var msg = lang.GetMessage(key, this, userId);
+            return args.Length > 0 ? string.Format(msg, args) : msg;
+        }
+
+        protected override void LoadDefaultMessages()
+        {
+            lang.RegisterMessages(new Dictionary<string, string>
+            {
+                ["NoCategories"]      = "No categories configured — please check HelpCenterUI.json.",
+                ["NoPageVisible"]     = "<color=#ff8888>No help page visible — check permissions or admin pages.</color>",
+                ["PageNotFound"]      = "<color=#ff8888>Help editor: page not found or not visible.</color>",
+                ["AdminOnly"]         = "<color=#ff8888>Only server admins may edit this page.</color>",
+                ["PageInvalid"]       = "Page is no longer valid.",
+                ["HelpSaved"]         = "<color=#8fdf9f>Help saved: {0} / {1}</color>",
+                ["ChatHeader"]        = "<color=#8EC6FF>----- Help: {0} -----</color>",
+                ["ConfirmDelPage"]    = "<color=#ffcc88>To delete this page press \"DELETE PAGE\" again (within {0} s).</color>",
+                ["ConfirmDelCat"]     = "<color=#ffcc88>To delete this category press \"DELETE CATEGORY\" again (within {0} s).</color>",
+                ["OpenHelpFirst"]     = "Open /help first or use /helpedit newpage <category> <slug>.",
+            }, this);
+        }
+
         private void Init()
         {
             permission.RegisterPermission(PermAdmin, this);
@@ -1001,7 +1024,7 @@ namespace Oxide.Plugins
 
             var rendered = RenderPageContent(page.Content);
             var lines = SplitLines(rendered);
-            player.ChatMessage("<color=#8EC6FF>----- Hilfe: " + page.Title + " -----</color>");
+            player.ChatMessage(T("ChatHeader", player.UserIDString, page.Title));
             foreach (var line in lines)
             {
                 if (!string.IsNullOrWhiteSpace(line))
@@ -1115,7 +1138,7 @@ namespace Oxide.Plugins
             var mainKeys = GetMainCategoryKeys();
             if (mainKeys.Count == 0)
             {
-                player.ChatMessage("HelpCenterUI: Keine Kategorien konfiguriert.");
+                player.ChatMessage(T("NoCategories", player.UserIDString));
                 return;
             }
 
@@ -1504,13 +1527,13 @@ namespace Oxide.Plugins
                 return;
             if (!TryGetPage(categoryKey, pageKey, out var pageCfg) || !IsPageVisibleToPlayer(pageCfg, player))
             {
-                player.ChatMessage("<color=#ff8888>Hilfe-Editor: Seite nicht gefunden oder nicht sichtbar.</color>");
+                player.ChatMessage(T("PageNotFound", player.UserIDString));
                 return;
             }
 
             if (pageCfg.AdminOnly && !player.IsAdmin)
             {
-                player.ChatMessage("<color=#ff8888>Nur Server-Admins dürfen diese Seite bearbeiten.</color>");
+                player.ChatMessage(T("AdminOnly", player.UserIDString));
                 return;
             }
 
@@ -1999,7 +2022,7 @@ namespace Oxide.Plugins
             var mk = GetMainCategoryKeys();
             if (mk.Count == 0)
             {
-                player.ChatMessage("Keine Kategorien mehr – bitte HelpCenterUI.json prüfen.");
+                player.ChatMessage(T("NoCategories", player.UserIDString));
                 return;
             }
 
@@ -2013,7 +2036,7 @@ namespace Oxide.Plugins
                 }
             }
 
-            player.ChatMessage("<color=#ff8888>Keine Hilfeseite sichtbar – fehlen Rechte oder Admin-Seiten.</color>");
+            player.ChatMessage(T("NoPageVisible", player.UserIDString));
         }
 
         [ConsoleCommand("hcui.edit.delpage")]
@@ -2028,8 +2051,7 @@ namespace Oxide.Plugins
             if (!MatchesPendingDelete(player.userID, "page", d.CategoryKey, d.PageKey))
             {
                 SetPendingDelete(player.userID, "page", d.CategoryKey, d.PageKey);
-                player.ChatMessage("<color=#ffcc88>Zum Löschen dieser Seite bitte „SEITE LÖSCHEN“ nochmal drücken (innerhalb von " +
-                                   (int)PendingDeleteConfirmSeconds + " s).</color>");
+                player.ChatMessage(T(“ConfirmDelPage”, player.UserIDString, (int)PendingDeleteConfirmSeconds));
                 return;
             }
 
@@ -2049,8 +2071,7 @@ namespace Oxide.Plugins
             if (!MatchesPendingDelete(player.userID, "cat", d.CategoryKey, null))
             {
                 SetPendingDelete(player.userID, "cat", d.CategoryKey, null);
-                player.ChatMessage("<color=#ffcc88>Zum Löschen dieser Kategorie bitte „KATEGORIE LÖSCHEN“ nochmal drücken (innerhalb von " +
-                                   (int)PendingDeleteConfirmSeconds + " s).</color>");
+                player.ChatMessage(T(“ConfirmDelCat”, player.UserIDString, (int)PendingDeleteConfirmSeconds));
                 return;
             }
 
@@ -2084,7 +2105,7 @@ namespace Oxide.Plugins
             }
             else
             {
-                player.ChatMessage("Zuerst /help öffnen oder /helpedit newpage <kategorie> <slug> nutzen.");
+                player.ChatMessage(T("OpenHelpFirst", player.UserIDString));
                 return;
             }
 
@@ -2120,7 +2141,7 @@ namespace Oxide.Plugins
                 return;
             if (!TryGetPage(d.CategoryKey, d.PageKey, out var pageCfg) || !IsPageVisibleToPlayer(pageCfg, player))
             {
-                player.ChatMessage("Seite nicht mehr gültig.");
+                player.ChatMessage(T("PageInvalid", player.UserIDString));
                 return;
             }
 
@@ -2130,7 +2151,7 @@ namespace Oxide.Plugins
             pageCfg.Title = (d.Title ?? string.Empty).Trim();
             pageCfg.Content = d.Content ?? string.Empty;
             SaveConfig();
-            player.ChatMessage("<color=#8fdf9f>Hilfe gespeichert: " + d.CategoryKey + " / " + d.PageKey + "</color>");
+            player.ChatMessage(T("HelpSaved", player.UserIDString, d.CategoryKey, d.PageKey));
             CuiHelper.DestroyUi(player, UiNameEdit);
             OpenUi(player, d.CategoryKey, d.PageKey);
         }
