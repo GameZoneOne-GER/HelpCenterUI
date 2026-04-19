@@ -11,11 +11,9 @@
 
 ## Screenshots
 
-> Replace with actual screenshots — upload to `screenshots/` in the repo and update the paths below.
-
 | Main menu | Category page |
 |---|---|
-| ![Main menu](https://placehold.co/480x270/0d1117/4d9375?text=Main+Menu) | ![Category page](https://placehold.co/480x270/0d1117/4d9375?text=Category+Page) |
+| ![Main menu](https://pic.gamezoneone.de/api/media/89qkk6yf.png) | ![Category page](https://pic.gamezoneone.de/api/media/19q8gkx2.png) |
 
 ---
 
