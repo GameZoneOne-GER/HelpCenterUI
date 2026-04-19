@@ -9,6 +9,16 @@
 
 ---
 
+## Screenshots
+
+> Replace with actual screenshots — upload to `screenshots/` in the repo and update the paths below.
+
+| Main menu | Category page |
+|---|---|
+| ![Main menu](https://placehold.co/480x270/0d1117/4d9375?text=Main+Menu) | ![Category page](https://placehold.co/480x270/0d1117/4d9375?text=Category+Page) |
+
+---
+
 ## Features
 
 - Full **CUI-based help center** — opens as an in-game UI overlay
