@@ -2051,7 +2051,7 @@ namespace Oxide.Plugins
             if (!MatchesPendingDelete(player.userID, "page", d.CategoryKey, d.PageKey))
             {
                 SetPendingDelete(player.userID, "page", d.CategoryKey, d.PageKey);
-                player.ChatMessage(T(“ConfirmDelPage”, player.UserIDString, (int)PendingDeleteConfirmSeconds));
+                player.ChatMessage(T("ConfirmDelPage", player.UserIDString, (int)PendingDeleteConfirmSeconds));
                 return;
             }
 
@@ -2071,7 +2071,7 @@ namespace Oxide.Plugins
             if (!MatchesPendingDelete(player.userID, "cat", d.CategoryKey, null))
             {
                 SetPendingDelete(player.userID, "cat", d.CategoryKey, null);
-                player.ChatMessage(T(“ConfirmDelCat”, player.UserIDString, (int)PendingDeleteConfirmSeconds));
+                player.ChatMessage(T("ConfirmDelCat", player.UserIDString, (int)PendingDeleteConfirmSeconds));
                 return;
             }
 
